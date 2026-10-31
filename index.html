@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Master 플래시카드 481-600</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    background: #f3f1fa; color: #333;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh; padding: 20px;
+  }
+  h1 { font-size: 1.2rem; color: #6b5ca5; margin-bottom: 12px; }
+  .top { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
+  .top button {
+    border: 1px solid #6b5ca5; background: #fff; color: #6b5ca5;
+    padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.9rem;
+  }
+  .top button.on { background: #6b5ca5; color: #fff; }
+  .progress { font-size: 0.9rem; color: #777; margin-bottom: 6px; }
+  .bar { width: 100%; max-width: 480px; height: 6px; background: #ddd; border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+  .bar div { height: 100%; background: #6b5ca5; width: 0; transition: width .3s; }
+  .scene { width: 100%; max-width: 480px; height: 300px; perspective: 1000px; cursor: pointer; }
+  .card {
+    width: 100%; height: 100%; position: relative;
+    transform-style: preserve-3d; transition: transform .5s;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+  .face {
+    position: absolute; inset: 0; backface-visibility: hidden;
+    border-radius: 16px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px; text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,.1);
+  }
+  .front { background: #fff; }
+  .back { background: #6b5ca5; color: #fff; transform: rotateY(180deg); }
+  .num { position: absolute; top: 14px; left: 18px; font-size: .8rem; opacity: .6; }
+  .word { font-size: 2.2rem; font-weight: bold; }
+  .meaning { font-size: 1.25rem; line-height: 1.7; word-break: keep-all; }
+  .hint { position: absolute; bottom: 14px; font-size: .75rem; opacity: .5; }
+  .nav { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; justify-content: center; }
+  .nav button {
+    border: none; padding: 12px 18px; border-radius: 12px;
+    font-size: 1rem; cursor: pointer; color: #fff;
+  }
+  .prev, .next { background: #9a8fc7; }
+  .know { background: #4caf7a; }
+  .dont { background: #e57373; }
+  .done { display: none; text-align: center; margin-top: 30px; }
+  .done h2 { color: #6b5ca5; margin-bottom: 10px; }
+  .done button { margin-top: 14px; padding: 10px 20px; border: none; border-radius: 12px; background: #6b5ca5; color: #fff; font-size: 1rem; cursor: pointer; }
+  .keys { margin-top: 16px; font-size: .75rem; color: #999; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Word Master 중등 고난도 · 481~600</h1>
+
+<div class="top">
+  <button id="modeBtn">영어 → 뜻</button>
+  <button id="shuffleBtn">섞기</button>
+  <button id="unknownBtn">모르는 것만</button>
+  <button id="resetBtn">처음부터</button>
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="bar"><div id="barFill"></div></div>
+
+<div id="study" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+  <div class="scene" id="scene">
+    <div class="card" id="card">
+      <div class="face front">
+        <span class="num" id="numF"></span>
+        <div id="frontText"></div>
+        <span class="hint">탭해서 뒤집기</span>
+      </div>
+      <div class="face back">
+        <span class="num" id="numB"></span>
+        <div id="backText"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="prev" id="prevBtn">◀ 이전</button>
+    <button class="dont" id="dontBtn">몰라요</button>
+    <button class="know" id="knowBtn">알아요</button>
+    <button class="next" id="nextBtn">다음 ▶</button>
+  </div>
+  <div class="keys">키보드: 스페이스 = 뒤집기 · ←/→ = 이전/다음 · ↑ = 알아요 · ↓ = 몰라요</div>
+</div>
+
+<div class="done" id="done">
+  <h2>한 바퀴 끝!</h2>
+  <p id="result"></p>
+  <button id="retryUnknown">모르는 단어만 다시</button>
+  <button id="retryAll">전체 다시</button>
+</div>
+
+<script>
+const DATA = [
+[481,"condition","1. 건강 상태, 컨디션 2. 상황, 조건"],
+[482,"chemical","ⓝ 화학 물질 ⓐ 화학의, 화학적인"],
+[483,"digest","소화하다"],
+[484,"disorder","1. (가벼운) 병, (신체 기능의) 장애[이상] 2. 무질서, 혼란 (상태)"],
+[485,"worsen","악화되다"],
+[486,"dental","치아의"],
+[487,"medical","의학의, 의술의, 의료용의"],
+[488,"mental","정신의, 심적인"],
+[489,"recover","회복하다, 되찾다"],
+[490,"emergency","비상사태, 위급"],
+[491,"allergy","알레르기"],
+[492,"joint","관절, 접합"],
+[493,"spine","척추, 등뼈"],
+[494,"sight","시각, 시력"],
+[495,"pulse","맥박, 고동"],
+[496,"infection","감염, 전염(병)"],
+[497,"sanitary","위생의, 위생적인, 깨끗한"],
+[498,"symptom","징후, 증상"],
+[499,"disabled","장애를 입은, 장애의"],
+[500,"inject","주사하다, 투여하다"],
+[501,"prescribe","처방하다"],
+[502,"tablet","알약, 정제"],
+[503,"wound","ⓝ 상처, 부상 ⓥ 상처를 입히다, 상하게 하다"],
+[504,"injure","상처를 입히다, 다치게 하다"],
+[505,"heal","치유되다, 치료하다, 고치다"],
+[506,"immune","면역의"],
+[507,"strain","ⓝ 긴장, 큰 부담 ⓥ 긴장시키다, (발목을) 접질리다"],
+[508,"bruise","ⓝ 멍, 타박상, 좌상 ⓥ 타박상을 입히다"],
+[509,"come down with","~의 병에 걸리다"],
+[510,"ease off","누그러지다, 완화되다[시키다]"],
+[511,"enrich","풍부하게 하다, 부유하게 하다"],
+[512,"barrel","1. 배럴(용량의 단위로 약 159리터) 2. 통"],
+[513,"herd","(가축의) 떼, 무리"],
+[514,"crisis","위기 (복수형: crises)"],
+[515,"provide","1. 공급하다(with) 2. 준비하다(for)"],
+[516,"material","ⓝ 물질, 재료 ⓐ 물질적인, 세속적인"],
+[517,"export","ⓥ 수출하다 ⓝ 수출"],
+[518,"construct","건설하다, 조립하다"],
+[519,"pollution","오염, 공해"],
+[520,"agriculture","농업"],
+[521,"graze","(가축이) 풀을 뜯어 먹다"],
+[522,"pasture","목초지"],
+[523,"cattle","1. 소 2. 가축"],
+[524,"cultivate","경작하다, 재배하다"],
+[525,"concrete","ⓝ 콘크리트 ⓐ 1. 구체적인 2. 콘크리트의"],
+[526,"crane","기중기"],
+[527,"invest","투자하다"],
+[528,"expand","1. 확장하다 2. 팽창하다"],
+[529,"scale","1. 규모 2. 저울 3. 비늘"],
+[530,"proportion","비율"],
+[531,"surpass","초월하다, ~보다 낫다"],
+[532,"generate","발생시키다"],
+[533,"constant","일정한, 지속적인"],
+[534,"optimistic","낙관적인"],
+[535,"undertake","떠맡다, 착수하다"],
+[536,"assemble","1. 조립하다 2. 모으다"],
+[537,"innovative","획기적인, 혁신적인"],
+[538,"enterprise","1. 기업, 회사 2. (특히 모험적인) 사업"],
+[539,"shut down","문을 닫다, 폐쇄하다"],
+[540,"set up","시작하다, 창설하다, 건립하다"],
+[541,"budget","예산, 예산안"],
+[542,"capital","ⓝ 1. 자본 2. 수도 3. 대문자 ⓐ 1. 자본의 2. 주요한"],
+[543,"account","1. 거래, 예금 계좌 2. 계산, 회계"],
+[544,"expense","지출, 비용, 경비"],
+[545,"collapse","ⓥ 붕괴되다, 무너지다, (가치가) 폭락하다 ⓝ 붕괴, 실패"],
+[546,"economic","경제학의, 경제(상)의"],
+[547,"risk","위험, 모험"],
+[548,"decline","ⓝ (가격) 하락 ⓥ (가격·가치가) 하락하다"],
+[549,"stock","1. 주식, 주 2. 재고(품)"],
+[550,"possess","소유하다, 가지다"],
+[551,"property","1. 재산, 소유물 2. 부동산, 토지"],
+[552,"asset","자산, 재산"],
+[553,"finance","재정, 재무"],
+[554,"loan","대출(금), 대여"],
+[555,"estimate","ⓥ 평가하다, 견적하다 ⓝ 평가, 견적"],
+[556,"commerce","상업, 통상, 교섭"],
+[557,"negotiate","협상하다"],
+[558,"currency","1. 통화, 화폐 2. 유통"],
+[559,"boost","ⓥ 증대하다 ⓝ 경기 부양, (가격의) 상승"],
+[560,"fortune","1. 재산, 부 2. 행운"],
+[561,"unemployed","실업의, 무직의"],
+[562,"income","수입, 소득"],
+[563,"annual","1년의, 해마다의"],
+[564,"strategy","전략, 계획"],
+[565,"temporary","일시적인, 임시의"],
+[566,"outcome","결과(물), (구체적인) 성과"],
+[567,"potential","잠재적인, 발전 가능성이 있는"],
+[568,"pay off","1. (빚 등을) 다 갚다 2. 성공하다, 성과를 올리다"],
+[569,"lay off","~을 해고하다"],
+[570,"in need","어려움에 처한, 궁핍한"],
+[571,"elect","선거하다, 선출하다, 고르다"],
+[572,"declare","1. 선언하다, 공표하다 2. 단언하다"],
+[573,"democracy","민주주의, 민주제"],
+[574,"official","ⓝ 공무원, 관리 ⓐ 공무상의, 공식의"],
+[575,"candidate","(선거의) 후보자[출마자]; 지원자, 응시자"],
+[576,"oppose","반대하다, 대항하다"],
+[577,"immediate","1. 즉각적인 2. 직접적인, 가장 가까운"],
+[578,"insist","고집하다, 주장하다, 요구하다"],
+[579,"union","1. 연합, 합병 2. (노동) 조합"],
+[580,"indifferent","무관심한"],
+[581,"campaign","선거 운동, 유세, 캠페인"],
+[582,"party","1. 정당 2. 파티, 회합"],
+[583,"dispute","ⓝ 논쟁 ⓥ 논쟁하다"],
+[584,"postpone","연기하다, 뒤로 미루다"],
+[585,"convince","1. (설득하여) 납득시키다 2. 확신시키다"],
+[586,"persuade","설득하다"],
+[587,"assume","추측하다, 사실이라고 생각하다"],
+[588,"approve","찬성하다, 승인하다"],
+[589,"session","1. (국회의) 회기, 기간 2. (대학) 학기, 수업"],
+[590,"deed","1. 업적 2. 행위"],
+[591,"reputation","1. 평판 2. 명성, 덕망"],
+[592,"conservative","보수적인"],
+[593,"command","ⓥ 1. (군대 등을) 지휘하다 2. 명령하다 ⓝ 1. 지휘권 2. 명령 3. (언어) 구사 능력"],
+[594,"hostile","적대적인"],
+[595,"authority","1. 권위, 권한 2. (복수형) 당국"],
+[596,"cabinet","1. (정치) 내각 2. 장식장, 캐비닛"],
+[597,"federal","연방의, 연방제의"],
+[598,"unify","통일하다, 단일화하다"],
+[599,"run for","~에 입후보하다, 출마하다"],
+[600,"speak for","~을 대변하다"]
+];
+
+let deck = [...DATA];
+let idx = 0;
+let reverse = false;          // false: 영어→뜻, true: 뜻→영어
+let unknown = new Set();      // 몰라요 누른 단어 번호
+let known = new Set();
+
+const $ = id => document.getElementById(id);
+const card = $("card");
+
+function render() {
+  const [n, w, m] = deck[idx];
+  const wordHTML = `<div class="word">${w}</div>`;
+  const meanHTML = `<div class="meaning">${m}</div>`;
+  card.classList.remove("flipped");
+  setTimeout(() => {
+    $("frontText").innerHTML = reverse ? meanHTML : wordHTML;
+    $("backText").innerHTML  = reverse ? wordHTML : meanHTML;
+  }, 150);
+  $("numF").textContent = $("numB").textContent = n;
+  $("progress").textContent =
+    `${idx + 1} / ${deck.length}  ·  알아요 ${known.size}  ·  몰라요 ${unknown.size}`;
+  $("barFill").style.width = ((idx + 1) / deck.length * 100) + "%";
+}
+
+function flip() { card.classList.toggle("flipped"); }
+
+function next() {
+  if (idx < deck.length - 1) { idx++; render(); }
+  else finish();
+}
+function prev() { if (idx > 0) { idx--; render(); } }
+
+function mark(isKnown) {
+  const n = deck[idx][0];
+  if (isKnown) { known.add(n); unknown.delete(n); }
+  else { unknown.add(n); known.delete(n); }
+  next();
+}
+
+function finish() {
+  $("study").style.display = "none";
+  $("done").style.display = "block";
+  $("result").textContent = `알아요 ${known.size}개 · 몰라요 ${unknown.size}개`;
+}
+
+function start(list) {
+  if (!list.length) { alert("해당하는 단어가 없어요!"); return; }
+  deck = list; idx = 0;
+  $("done").style.display = "none";
+  $("study").style.display = "flex";
+  render();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+$("scene").onclick = flip;
+$("nextBtn").onclick = next;
+$("prevBtn").onclick = prev;
+$("knowBtn").onclick = () => mark(true);
+$("dontBtn").onclick = () => mark(false);
+
+$("modeBtn").onclick = () => {
+  reverse = !reverse;
+  $("modeBtn").textContent = reverse ? "뜻 → 영어" : "영어 → 뜻";
+  $("modeBtn").classList.toggle("on", reverse);
+  render();
+};
+$("shuffleBtn").onclick = () => start(shuffle(deck));
+$("unknownBtn").onclick = () => start(DATA.filter(d => unknown.has(d[0])));
+$("resetBtn").onclick = () => { known.clear(); unknown.clear(); start([...DATA]); };
+$("retryUnknown").onclick = () => start(shuffle(DATA.filter(d => unknown.has(d[0]))));
+$("retryAll").onclick = () => { known.clear(); unknown.clear(); start([...DATA]); };
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") { e.preventDefault(); flip(); }
+  else if (e.key === "ArrowRight") next();
+  else if (e.key === "ArrowLeft") prev();
+  else if (e.key === "ArrowUp") mark(true);
+  else if (e.key === "ArrowDown") mark(false);
+});
+
+render();
+</script>
+</body>
+</html>
